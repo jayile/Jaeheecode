@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 문의 테이블 정리 필요 문의 목록뷰 추가해야함 -->
+<mapper namespace="com.study.springboot.dao.ICDao">
+
+	<insert id="customer_write1Dao" parameterType="java.util.HashMap">
+		insert into qna (qid, qgroup, qname, qkind, qtitle, qcontent, cphoto1, cphoto2)
+		values (qna_seq.nextval, qna_seq.currval, #{qName}, #{qKind}, #{qTitle}, #{qContent}, #{file1}, #{file2})
+	</insert>
+	
+	<insert id="customer_write2Dao" parameterType="java.util.HashMap">
+		insert into qna (qid, qgroup, qname, qkind, qtitle, qcontent, cphoto1)
+		values (qna_seq.nextval, qna_seq.currval, #{qName}, #{qKind}, #{qTitle}, #{qContent}, #{file1})
+	</insert>
+	
+	<insert id="customer_write3Dao" parameterType="java.util.HashMap">
+		insert into qna (qid, qgroup, qname, qkind, qtitle, qcontent)
+		values (qna_seq.nextval, qna_seq.currval, #{qName}, #{qKind}, #{qTitle}, #{qContent})
+	</insert>
+	
+	<select id="qna_listDao" resultType="com.study.springboot.dto.CDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+			        select * 
+			          from qna
+			         where qname = #{param1}
+			      order by qgroup desc, qstep asc) A 
+		     where rownum <= #{param3}) B 
+		 where B.num >= #{param2}
+	]]>
+	</select>
+	
+	<select id="selectCountDao" resultType="_int">
+		select count(*) as total from qna 
+		 where qname = #{param1}
+	</select>
+	
+	<select id="all_qna_listDao" resultType="com.study.springboot.dto.CDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+			        select * 
+			          from qna
+			      order by qgroup desc, qstep asc) A 
+			     where rownum <= #{param2}) B 
+		 where B.num >= #{param1}
+	]]>
+	</select>
+	
+	<select id="all_qnaCountDao" resultType="_int">
+		select count(*) as total from qna
+	</select>
+	
+	<select id="qna_viewDao" resultType="com.study.springboot.dto.CDto">
+		select * from qna 
+		 where qid = #{param1}
+	</select>
+	
+	<insert id="qna_reply_writeDao" parameterType="java.util.HashMap">
+		insert into qna (qid, qgroup, qname, qkind, qtitle, qcontent, qstep, qindent)
+		values (qna_seq.nextval, #{qGroup}, #{qName}, '문의 답변', '문의 답변', #{qContent}, #{qStep} + 1, #{qIndent} + 1)
+	</insert>
+	
+	<update id="qna_anwser_updateDao" parameterType="java.util.HashMap">
+		update qna set anwser = 'Y' where qid = #{qId}
+	</update>
+</mapper>

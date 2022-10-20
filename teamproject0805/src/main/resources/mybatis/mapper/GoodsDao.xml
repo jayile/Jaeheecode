@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.study.springboot.dao.IGDao">
+	
+	<insert id="goods_writeDao1" parameterType="java.util.HashMap">
+		insert into gameshop (cid, cname, cprice, ccount, cdetail, cphoto1, cphoto2, kind)
+		values (gameshop_seq.nextval, #{cName}, #{cPrice}, #{cCount}, #{cDetail}, #{file1}, #{file2}, #{kind})
+	</insert>
+	
+	<insert id="goods_writeDao2" parameterType="java.util.HashMap">
+		insert into gameshop (cid, cname, cprice, ccount, cdetail, cphoto1, cphoto2, cphoto3, kind)
+		values (gameshop_seq.nextval, #{cName}, #{cPrice}, #{cCount}, #{cDetail}, #{file1}, #{file2}, #{file3}, #{kind})
+	</insert>
+	
+	<delete id="del_goodsDao">
+		delete from gameshop 
+		 where cid = #{param1}
+	</delete>
+	
+	<select id="goods_listDao" resultType="com.study.springboot.dto.GDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from gameshop
+		         order by gDate desc) A 
+		     where rownum <= #{param2} ) B 
+		 where B.num >= #{param1}
+	]]>
+	</select>
+	
+	<select id="selectCountDao" resultType="_int">
+		select count(*) as total from gameshop
+	</select>
+	
+	<select id="search_goodsDao" resultType="com.study.springboot.dto.GDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from gameshop
+		         where cname like #{param1} order by cid desc) A 
+		     where rownum <= #{param3}) B 
+		 where B.num >= #{param2}
+	]]>
+	</select>
+	
+	<select id="search_selectCountDao" resultType="_int">
+		select count(*) as total from gameshop 
+		 where cname like '${param1}'
+	</select>
+	
+	<select id="kind_goodsDao" resultType="com.study.springboot.dto.GDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from gameshop
+		         where kind = #{param1} order by gdate desc) A 
+		     where rownum <= #{param3}) B 
+		 where B.num >= #{param2}
+	]]>
+	</select>
+	
+	<select id="kind_selectCountDao" resultType="_int">
+		select count(*) as total from gameshop 
+		 where kind = '${param1}'
+	</select>
+	
+	<select id="goods_viewDao" resultType="com.study.springboot.dto.GDto">
+		select * from gameshop 
+		 where cid = #{param1}
+	</select>
+	
+	<select id="avgScoreDao" resultType="com.study.springboot.dto.GDto">
+		select avg(rscore) as avgscore 
+		  from shopreview
+		 where cid = #{param1}
+	</select>
+	 
+	<!-- 장바구니 담기 -->
+	<insert id="goods_put1Dao" parameterType="java.util.HashMap">
+		insert into shopbasket (mid, cid, count)
+		values (#{userId}, #{goodsId}, #{goodsCount})
+	</insert>
+	<!-- 세일하는 상품 담기 -->
+	<insert id="goods_put2Dao" parameterType="java.util.HashMap">
+		insert into shopbasket (mid, cid, count)
+		values (#{userId}, #{goodsId}, #{goodsCount})
+	</insert>
+	<!-- 유저 장바구니 확인 -->
+	<select id="goods_confirmDao" resultType="_int">
+		select count(*) from shopbasket 
+		 where mid = #{userId} and cid = #{goodsId}
+	</select>
+	<!-- 같은 품목이 있을 시 갯수 증가 -->
+	<update id="goods_upDao" parameterType="java.util.HashMap">
+		update shopbasket set count = count + 1 
+		 where mid = #{userId} and cid = #{goodsId}
+	</update>
+	
+	<!-- 장바구니 목록 -->
+	<select id="cart_listDao" resultType="com.study.springboot.dto.GDto">
+		select a.cid, a.cphoto1, a.cname, a.cprice, b.count 
+		  from gameshop a, shopbasket b 
+		 where mid = '${param}' and a.cid = b.cid
+	</select>
+	<!-- 장바구니 개별 삭제 -->
+	<delete id="cart_deleteDao">
+		delete from shopbasket 
+		 where cid = #{param1} and mid = #{param2}
+	</delete>
+	<!-- 장바구니 전부삭제 -->
+	<delete id="cart_AlldeleteDao">
+		delete from shopbasket 
+		 where mid = #{param1}
+	</delete>
+	
+	<!-- 리뷰 -->
+	<insert id="review_writeDao" parameterType="java.util.HashMap">
+		insert into shopreview (mid, cid, rcontent, rscore, rid)
+		values (#{userId}, #{cId}, #{rContent}, #{score}, shopreview_seq.nextval)
+	</insert>
+	<update id="up_reviewDao" parameterType="java.util.HashMap">
+		update gameshop 
+		   set rcount = rcount + 1 
+		 where cid = #{cId}
+	</update>
+	<update id="down_reviewDao">
+		update gameshop 
+		   set rcount = rcount - 1 
+		 where cid = #{cId}
+	</update>
+	<select id="review_ListDao" resultType="com.study.springboot.dto.GDto">
+		select * from shopreview
+		 where cid = ${param}
+      order by rdate desc
+	</select>
+	<delete id="delete_reviewDao">
+		delete shopreview 
+		 where mid = #{param1} and cid = #{param2} and rcontent = #{param3}
+	</delete>	
+	<update id="modify_reviewDao">
+		update shopreview 
+		   set rscore = #{param3}, rcontent = #{param4}, rmodi = 1
+		 where rid = #{param5}
+	</update>
+	<select id="selectReviewCountDao" resultType="_int">
+		select count(*) as total 
+		  from shopreview 
+		 where mid = #{param1}
+	</select>
+	<select id="reviewListDao" resultType="com.study.springboot.dto.GDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select b.rid, a.cid, a.cname, b.rcontent, b.rdate 
+				  from gameshop a, shopreview b 
+				 where a.cid = b.cid and b.mid = #{param1} order by a.cid desc) A 
+		     where rownum <= #{param3}) B 
+		 where B.num >= #{param2}
+	]]>
+	</select>
+	<delete id="delete_myreviewDao">
+		delete shopreview 
+		 where rid = #{param1}
+	</delete>	
+	<!-- 나중에 수정됨 표시도 추가할까 ? -->
+	
+	<update id="modify_goodsDao">
+		update gameshop 
+		   set cname = #{param2}, cPrice = #{param3}, cCount = #{param4}, cSale = #{param3} - ((#{param3}) * (#{param5} / 100)), cDown = #{param5}
+		 where cid = #{param1}
+	</update>
+	
+	<!-- 위시리스트 -->
+	<insert id="add_wish">
+		insert into shopwish (mid, cid) values (#{param1}, #{param2})
+	</insert>
+	<delete id="del_wish">
+		delete shopwish where mid=#{param1} and cid=#{param2}
+	</delete>
+	<select id="wish_list" resultType="com.study.springboot.dto.WDto">
+		select * from shopwish where mid=#{param1} and cid=#{param2}
+	</select>
+	
+	<!-- 결제페이지 -->
+	<select id="get_price" resultType="com.study.springboot.dto.GDto">
+		select a.cprice, b.count, a.cid, a.cCount, a.cname, a.cphoto1  
+		  from gameshop a, shopbasket b 
+		 where mid = #{param} and a.cid = b.cid
+	</select>
+	<select id="add_ordernumber" resultType="string">
+		select shoporder_seq.nextval from dual
+	</select>
+	<insert id="add_orderdb">
+		insert into shoporder (pid, mid, cid, pcount, cprice, pprice, cname, cphoto1)
+			values (#{param1}, #{param2}, #{param3}, #{param4}, #{param5}, #{param6},#{param7}, #{param8})
+	</insert>
+	<insert id="add_paydb">
+		insert into shoppay (pnum, pid, mid, totalprice, azipcode, amain, asub, pdeliverymemo, pstatus, adrname)
+			values (shoppay_seq.nextval, #{param1}, #{param2}, #{param3}, #{param4}, #{param5}, #{param6}, #{param7}, 0, #{param8})
+	</insert>
+	<update id="minus_count">
+		update gameshop set cCount = #{param2} where cid = #{param1}
+	</update>
+	<update id="del_cart">
+		delete shopbasket where cid = #{param1}
+	</update>
+	<select id="check_cCount" resultType="com.study.springboot.dto.GDto">
+		select cid, ccount from gameshop where cid = #{param1}
+	</select>
+	
+	
+	<!-- 결제 내역 -->
+	<select id="get_pay" resultType="com.study.springboot.dto.OrderDto">
+		select * from shoporder where mid = #{param1} order by pdate desc
+	</select>
+	<select id="order_payinfo" resultType="com.study.springboot.dto.OrderDto">
+		select * from shoporder where pid = #{param1}
+	</select>
+	<select id="pay_payinfo" resultType="com.study.springboot.dto.PaidDto">
+		select * from shoppay where pid = #{param1}
+	</select>
+	
+</mapper>

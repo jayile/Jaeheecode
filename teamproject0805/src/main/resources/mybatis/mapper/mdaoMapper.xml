@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.study.springboot.dao.MDao">
+	<!-- select -->
+	<select id="idcheck" resultType="_int">
+		select count(*) from shopmember where mid = #{param1}
+	</select>
+	<select id="idpwcheck" resultType="string">
+		select mpw from shopmember where mid = #{param1}
+	</select>
+	<select id="userinfo" resultType="com.study.springboot.dto.MDto">
+		select * from shopmember where mid = #{param1}
+	</select>
+	<select id="getUser" resultType="_int">
+		select count(*) from shopwish where mid = #{param1}
+	</select>
+	<select id="wishlist" resultType="com.study.springboot.dto.GDto">
+		select * from shopwish a, gameshop b where a.mid = #{param1} and a.cid = b.cid order by wdate desc
+	</select>
+	<!-- 주소 리스트 -->
+	<select id="adrlist" resultType="com.study.springboot.dto.AddressDto">
+		select * from shopaddress where mid = #{param1} order by aprimary desc
+	</select>
+	<select id="adr_find" resultType="_int">
+		select count(*) from shopaddress where mid = #{param1} and aname = #{param2}
+	</select>
+	<select id="adr_find_pry" resultType="_int">
+		select count(*) from shopaddress where mid = #{param1} and aPrimary = 1
+	</select>
+	<select id="adr_find_modi" resultType="com.study.springboot.dto.AddressDto">
+		select * from shopaddress where mid = #{param1} and aname = #{param2}
+	</select>
+	<select id="pay_adr" resultType="com.study.springboot.dto.AddressDto">
+		select * from shopaddress where mid = #{param1} and aPrimary = 1
+	</select>
+	<!-- 배송중인 상품 목록 -->
+	<select id="delivery_ing" resultType="_int">
+		select count(*) from shoppay where mid = #{param1} and pstatus = 1
+	</select>
+	<select id="delivery_ing_info" resultType="com.study.springboot.dto.OrderDto">
+		select * from shoporder where mid = #{param1} and pid in (select pid from shoppay where mid = #{param2} and pstatus = 1)
+	</select>
+	
+	<!-- insert -->
+	<insert id="join">
+		insert into shopmember (mid, mpw, mname, memail, mpnum, mblack, authority, enabled)
+		values (#{param1}, #{param2}, #{param3}, #{param4}, #{param5}, 0, 'ROLE_USER', 1)
+	</insert>
+	<insert id="snsjoin">
+		insert into shopmember (mid, mpw, mname, memail, mpnum, mblack, authority, enabled)
+		values (#{param1}, #{param2}, #{param3}, #{param4}, #{param5}, 0, 'ROLE_USER', 1)
+	</insert>
+	<!-- 주소 추가 -->
+	<insert id="add_adr">
+		insert into shopaddress (mid, adrname, aname, azipcode, amain, asub, aprimary)
+		values (#{param1}, #{param2}, #{param3}, #{param4}, #{param5}, #{param6}, #{param7})
+	</insert>
+	
+	<!-- update -->
+	<update id="modiuser">
+		update shopmember set memail = #{param2}, mpnum = #{param3} 
+		where mid = #{param1}
+	</update>
+	<update id="modipw">
+		update shopmember set mpw = #{param2}
+		where mid = #{param1}
+	</update>
+	<!-- 주배송지 > 일반배송지로 수정 -->
+	<update id="modi_primary_no">
+		update shopaddress set aPrimary = 0
+		where mid = #{param1} and aPrimary = 1
+	</update>
+
+	
+	<!-- delete -->
+	<delete id="deleteuser">
+		delete from shopmember where mid = #{param1}
+	</delete>
+	<!-- 주소 삭제 -->
+	<delete id="del_adr">
+		delete from shopaddress where mid = #{param1} and aname = #{param2}
+	</delete>
+</mapper>

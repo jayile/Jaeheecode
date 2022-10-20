@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.springboot.dao.IADao">
+	<!-- select -->
+	<!-- 회원 목록 조회 -->
+	<select id="memberlist" resultType="com.study.springboot.dto.MDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from shopmember
+		         order by mid desc) A 
+		     where rownum <= #{param2} ) B 
+		 where B.num >= #{param1}
+	]]>
+	</select>
+
+	<!-- 전체 회원 수 -->
+	<select id="countUser" resultType="_int">
+		select count(*) as total from shopmember
+	</select>
+	
+	<!-- 회원 아이디로 검색 -->
+	<select id="searchMemberList" resultType="com.study.springboot.dto.MDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from shopmember
+		         where mid like #{param1} order by mid desc) A 
+		     where rownum <= #{param3}) B 
+		 where B.num >= #{param2}
+	]]>
+	</select>
+	
+	<!-- 검색 결과 수 -->
+	<select id="searchCountUser" resultType="_int">
+		select count(*) as total from shopmember
+		where mid like #{param1}
+	</select>
+	
+	<!-- 회원 상세 조회 -->
+	<select id="memberinfo" resultType="com.study.springboot.dto.MDto">
+		select * from shopmember
+		where mid = #{param1}
+	</select>
+	
+	<!-- 블랙리스트 조회 -->
+	<select id="blackinfo" resultType="com.study.springboot.dto.BlackDto">
+		select * from shopblack
+		where mid = #{param1}
+	</select>
+	<!-- 블랙리스트 수 -->
+	<select id="blacklist" resultType="com.study.springboot.dto.BlackDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from shopblack
+		         order by mid desc) A 
+		     where rownum <= #{param2} ) B 
+		 where B.num >= #{param1}
+	]]>
+	</select>
+	<select id="countBlack" resultType="_int">
+		select count(*) as total from shopblack
+	</select>
+	
+	
+	
+	<!-- 주문내역 관리 -->
+	<select id="payinfo" resultType="com.study.springboot.dto.PaidDto">
+	<![CDATA[
+		select *
+		  from ( 
+		    select rownum num, A.* 
+		      from ( 
+		        select * 
+		          from shoppay
+		         order by pdate desc) A 
+		     where rownum <= #{param2} ) B 
+		 where B.num >= #{param1}
+	]]>
+	</select>
+	<!-- 주문내역 갯수 -->
+	<select id="countPay" resultType="_int">
+		select count(*) as total from shoppay
+	</select>
+	<!-- 주문내역 상세 -->
+	<select id="order_payinfo" resultType="com.study.springboot.dto.OrderDto">
+		select * from shoporder where pid = #{param1}
+	</select>
+	<select id="pay_payinfo" resultType="com.study.springboot.dto.PaidDto">
+		select * from shoppay where pid = #{param1}
+	</select>
+	<!-- 해당 유저의 구매목록 -->
+	<select id="user_paylist" resultType="com.study.springboot.dto.OrderDto">
+		select * from shoporder where mid = #{param1} order by pdate desc
+	</select>
+	<!-- 해당 유저의 리뷰 목록 -->
+	<select id="user_reviewlist" resultType="com.study.springboot.dto.GDto">
+		select b.rid, a.cid, a.cname, b.rcontent, b.rdate from gameshop a, shopreview b where b.mid = #{param1} order by b.rdate desc
+	</select>
+	
+	<!-- insert -->
+	<!-- 블랙리스트 추가 -->
+	<insert id="addBList">
+		insert into shopblack (mid, btype, bmemo)
+		values (#{param1}, #{param2}, #{param3})
+	</insert>
+	
+	<!-- update -->
+	<!-- enabled, mblack 수정 -->
+	<update id="modiEnabledA">
+		update shopmember set enabled = 0, mblack = #{param1}
+		where mid = #{param2}
+	</update>
+	<!-- mblack 만 수정 -->
+	<update id="modiEnabledB">
+		update shopmember set mblack = #{param1}
+		where mid = #{param2}
+	</update>
+	<!-- enabled, mblack 되돌리기 -->
+	<update id="returnEnabled">
+		update shopmember set enabled = 1, mblack = 0
+		where mid = #{param1}
+	</update>
+	<!-- 상품 발송됨 처리 -->
+	<update id="delivery_start">
+		update shoppay set pstatus = 1
+		where pid = #{param1}
+	</update>
+	
+	<!-- delete -->
+	<!-- 블랙리스트 해제 -->
+	<delete id="delBlack">
+		delete from shopblack where mid = #{param1}
+	</delete>
+</mapper>
